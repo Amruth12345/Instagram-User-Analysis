@@ -1,0 +1,49 @@
+                                                                        INSTAGRAM USER ANALYSIS
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1) Find the 5 oldest users of the Instagram from the database provided
+
+SELECT * FROM users ORDER BY created_at  LIMIT 5
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2)Find the users who have never posted a single photo on Instagram
+
+SELECT * FROM (SELECT u.id,u.username,p.image_url FROM `users` u LEFT OUTER JOIN photos p ON u.id = p.user_id UNION SELECT u.id,u.username,p.image_url FROM `users` u RIGHT OUTER JOIN photos p ON u.id = p.user_id) A WHERE image_url IS NULL;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3) Identify the winner of the contest and provide their details to the team
+
+SELECT u.username,u.id FROM (SELECT user_id, photo_id, COUNT(*) AS likesCount FROM likes GROUP BY photo_id ORDER BY `likesCount` DESC LIMIT 1 ) l LEFT OUTER JOIN `users` u ON u.id = l.user_id;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4) Identify and suggest the top 5 most commonly used hashtags on the platform
+
+SELECT tag_name FROM (SELECT tag_id,COUNT(*) AS TagCount FROM photo_tags GROUP BY tag_id ORDER BY TagCount DESC LIMIT 5 ) T LEFT OUTER JOIN tags t ON T.tag_id = t.id;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+5) Provide how many times does average user posts on Instagram. Also, provide the total number of photos on Instagram/total number of users
+
+SELECT NO_OF_PIC,NO_OF_USERS,(NO_OF_PIC/NO_OF_USERS) AS ANALYSIS FROM (SELECT DISTINCT COUNT(image_url) AS NO_OF_PIC, (SELECT DISTINCT COUNT(u.username)) AS NO_OF_USERS FROM `photos` p LEFT OUTER JOIN users u ON u.id = p.id)D;
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+6)Provide data on users (bots) who have liked every single photo on the site (since any normal user would not be able to do this).
+
+SELECT USER_ID , LIKES_GIVEN, 
+CASE
+ WHEN LIKES_GIVEN = NO_OF_IMAGES THEN "BOT"
+ WHEN LIKES_GIVEN < NO_OF_IMAGES THEN "NOT A BOT" 
+END AS ANALYSIS
+
+ FROM (SELECT COUNT(*) AS LIKES_GIVEN , l.user_id AS USER_ID ,(SELECT COUNT(image_url) FROM photos ) AS NO_OF_IMAGES
+ FROM likes l
+ LEFT OUTER JOIN 
+photos p ON p.id = l.user_id 
+GROUP BY l.user_id)D 
+ORDER BY `D`.`LIKES_GIVEN` DESC
+
+
